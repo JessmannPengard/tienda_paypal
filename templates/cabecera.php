@@ -25,7 +25,11 @@
                         <a class="nav-link active" href="index.php" aria-current="page">Home <span class="visually-hidden">(current)</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="mostrarcarrito.php">Carrito(0)</a>
+                        <a class="nav-link" href="mostrarcarrito.php">Carrito(
+                            <?php
+                                echo (empty($_SESSION["CARRITO"])) ? 0 : count($_SESSION["CARRITO"]);
+                            ?> )
+                        </a>
                     </li>
             </div>
         </div>

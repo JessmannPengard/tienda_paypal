@@ -27,9 +27,14 @@ if (isset($_POST['btnAccion'])) {
                             if (!isset($_SESSION["CARRITO"])) {
                                 $_SESSION["CARRITO"][0] = $producto;
                             } else {
-                                array_push($_SESSION["CARRITO"], $producto);
+                                $idsProductos = array_column($_SESSION["CARRITO"], "id");
+                                if (in_array($producto["id"], $idsProductos)) {
+                                    $mensaje = "El artículo ya estaba en el carrito";
+                                } else {
+                                    array_push($_SESSION["CARRITO"], $producto);
+                                    $mensaje = "Artículo añadido correctamente";
+                                }
                             }
-                            $mensaje .= print_r($_SESSION["CARRITO"],true);
                         } else {
                             $mensaje .= "Upsss Cantidad incorrecta" . "<br>";
                         }
@@ -46,6 +51,17 @@ if (isset($_POST['btnAccion'])) {
 
         case 'Eliminar':
 
+            if (is_numeric(openssl_decrypt($_POST["id"], COD, KEY))) {
+                $id = openssl_decrypt($_POST["id"], COD, KEY);
+                foreach ($_SESSION["CARRITO"] as $indice => $producto) {
+                    if ($producto["id"] == $id) {
+                        unset($_SESSION["CARRITO"][$indice]);
+                        $mensaje .= "Artículo eliminado" . "<br>";
+                    }
+                }
+            } else {
+                $mensaje .= "Upsss ID incorrecto" . "<br>";
+            }
             break;
     }
 }

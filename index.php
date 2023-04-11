@@ -6,10 +6,12 @@ include("templates/cabecera.php");
 ?>
 
 <br>
-<div class="alert alert-success" role="alert">
-    <?php echo $mensaje; ?>
-    <a href="mostrarcarrito.php" class="badge bg-success">Ver carrito</a>
-</div>
+<?php if ($mensaje != "") { ?>
+    <div class="alert alert-success" role="alert">
+        <?php echo $mensaje; ?>
+        <a href="mostrarcarrito.php" class="badge bg-success">Ver carrito</a>
+    </div>
+<?php } ?>
 
 <div class="row align-items-center g-2">
     <?php
