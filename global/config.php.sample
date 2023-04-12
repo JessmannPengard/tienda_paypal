@@ -1,0 +1,15 @@
+<?php
+
+// Base de datos
+define("DB_SERVER", "localhost");
+define("DB_USER", "root");
+define("DB_PASSWORD", "");
+define("DB_NAME", "tienda_paypal");
+
+// Encriptación
+define("KEY","YourEncryptKey");
+define("COD","AES-128-ECB");
+
+// Paypal
+define("CLIENTIDPAYPAL","ClientId Paypal");
+define("SECRETPAYPAL","Secret Paypal");
