@@ -17,24 +17,30 @@ if ($_POST) {
         $total += $producto["precio"] * $producto["cantidad"];
     }
 
-    $sentencia = $pdo->prepare("INSERT INTO tblventas VALUES
+    if (!isset($_SESSION["idVenta"])) {
+        $sentencia = $pdo->prepare("INSERT INTO tblventas VALUES
                 (NULL, :clave_transaccion, '', NOW(), :email, :total, 'Pendiente');");
-    $sentencia->bindParam(":clave_transaccion", $SSID);
-    $sentencia->bindParam(":email", $_POST["email"]);
-    $sentencia->bindParam(":total", $total);
-    $sentencia->execute();
-    $idVenta = $pdo->lastInsertId();
-
-    foreach ($_SESSION["CARRITO"] as $indice => $producto) {
-        $sentencia = $pdo->prepare("INSERT INTO tbldetalledeventa VALUES
-                (NULL, " . $idVenta . ", :idproducto, :precio, :cantidad, 0);");
-        $sentencia->bindParam(":idproducto", $producto["id"]);
-        $sentencia->bindParam(":precio", $producto["precio"]);
-        $sentencia->bindParam(":cantidad", $producto["cantidad"]);
+        $sentencia->bindParam(":clave_transaccion", $SSID);
+        $sentencia->bindParam(":email", $_POST["email"]);
+        $sentencia->bindParam(":total", $total);
         $sentencia->execute();
-    }
+        $idVenta = $pdo->lastInsertId();
 
-    //echo "TOTAL: " . $total;
+        foreach ($_SESSION["CARRITO"] as $indice => $producto) {
+            $sentencia = $pdo->prepare("INSERT INTO tbldetalledeventa VALUES
+                (NULL, " . $idVenta . ", :idproducto, :precio, :cantidad, 0);");
+            $sentencia->bindParam(":idproducto", $producto["id"]);
+            $sentencia->bindParam(":precio", $producto["precio"]);
+            $sentencia->bindParam(":cantidad", $producto["cantidad"]);
+            $sentencia->execute();
+        }
+
+        //echo "TOTAL: " . $total;
+    } else {
+        $idVenta = $_SESSION["idVenta"];
+    }
+} else {
+    header("Location:index.php");
 }
 ?>
 
@@ -90,14 +96,29 @@ if ($_POST) {
 
             });
         },
+        onCancel: function(data) {
+            alert("Pago cancelado");
+            console.log(data);
+        },
 
         // Call your server to finalize the transaction
         onApprove: function(data, actions) {
             return actions.order.capture()
                 .then(function(details) {
-                    console.log("Pago completado");
-                    console.log(details);
-                    window.location = "verificador.php?referenceId=" + details.purchase_units[0].reference_id;
+                    fetch("verificador.php", {
+                            method: "POST",
+                            headers: {
+                                'content-type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                datos: details
+                            })
+                        }).then(data => data.text())
+                        .then(datos => {
+                            console.log(datos);
+                        }).catch(err => {
+                            console.log(err);
+                        });
                 });
 
         }

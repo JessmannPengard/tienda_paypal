@@ -1,24 +1,42 @@
 <?php
-print_r($_GET);
-
-/*
 include("global/config.php");
-$clientID = CLIENTIDPAYPAL;
-$secret = SECRETPAYPAL;
+include("global/conexion.php");
 
-$login = curl_init("https://api-m.sandbox.paypal.com/v1/oauth2/token");
+session_start();
+$json = file_get_contents("php://input");
+$data = json_decode($json);
+$ref_id = $data->datos->purchase_units[0]->reference_id;
 
-curl_setopt($login, CURLOPT_RETURNTRANSFER, TRUE);
-curl_setopt($login, CURLOPT_USERPWD, $clientID . ":" . $secret);
-curl_setopt($login, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+$ref_data = explode("#", $ref_id);
+$id_Venta =  openssl_decrypt($ref_data[1], COD, KEY);
+$status = $data->datos->status;
 
-$respuesta = curl_exec($login);
+$total = 0;
+$SSID = session_id();
+foreach ($_SESSION["CARRITO"] as $indice => $producto) {
+    $total += $producto["cantidad"] * $producto["precio"];
+}
+$totalPaypal = $data->datos->purchase_units[0]->payments->captures[0]->amount->value;
 
-$obj_respuesta = json_decode($respuesta);
+$respuesta = array();
+$respuesta["estado"] = $status;
 
-$accessToken = $obj_respuesta->access_token;
+if ($status == "COMPLETED") {
+    if ($total == $totalPaypal) {
+        $respuesta["pago"] = "completo";
+    } else {
+        $respuesta["pago"] = "incompleto";
+    }
+}
+$consulta = "UPDATE tblventas SET paypal_datos = :paypalDatos, status = :estado WHERE id = :idVenta;";
+$sentencia = $pdo->prepare($consulta);
+$sentencia->bindParam(":paypalDatos", $json);
+$sentencia->bindParam(":estado", $status);
+$sentencia->bindParam(":idVenta", $id_Venta);
+$sentencia->execute();
 
-print_r($accessToken);
+// Vaciamos carrito
+unset($_SESSION["CARRITO"]);
+unset($_SESSION["idVenta"]);
 
-$venta = curl_init("https://api-m.sandbox.paypal.com/v1/payment/payment/" . $_GET["paymentID"]);
-*/
+echo json_encode($respuesta);
