@@ -16,5 +16,5 @@ define("SECRETPAYPAL","Secret Paypal");
 
 // Email
 define("EMAILHOST", 'smtp.gmail.com');
-define("EMAILUSER", 'cursoformacom2023@gmail.com');
+define("EMAILUSER", 'yourEmail@gmail.com');
 define("EMAILPASSWORD", 'YourPassword');
